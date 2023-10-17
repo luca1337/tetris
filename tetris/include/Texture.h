@@ -4,7 +4,9 @@
 
 #include <tuple>
 #include <string>
+
 #include <SDL2/SDL.h>
+#include <glm/vec2.hpp>
 
 class Texture
 {
@@ -13,6 +15,11 @@ public:
 	 * \brief Class destructor
 	 */
 	~Texture();
+
+	/**
+	 * \brief Class custom copy-constructor
+	 */
+	Texture(const Texture&);
 
 	/**
 	 * \brief Load texture from path (.jpg, .png. etc..)
@@ -38,13 +45,20 @@ public:
 	 */
 	auto Draw(SDL_Renderer* sdlRenderer, uint8_t alpha) const -> void;
 
+	auto SetSize(const glm::vec2& size) { m_Quad.w = size.x; m_Quad.h = size.y; }
 	auto SetPositionOnScreen(int x, int y) -> void;
 
 	auto GetPositionOnScreen() const -> std::tuple<int, int> { return std::make_tuple(m_Quad.x, m_Quad.y); }
 
 private:
-	uint32_t m_Width = {};
-	uint32_t m_Height = {};
+	int m_Width = {};
+	int m_Height = {};
 	SDL_Texture* m_SdlTexture = {};
-	SDL_Rect m_Quad = {};
+	SDL_Renderer* m_SdlRenderer = {};
+	SDL_FRect m_Quad = {};
+	Color m_Color = {};
+	bool m_IsLoadedFromFile = {};
+	bool m_UseBlending = {};
+	std::string m_Path = {};
+	unsigned char* m_Pixels = {};
 };

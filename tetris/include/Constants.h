@@ -19,3 +19,6 @@ static constexpr auto TetraminoTIndex = 7;
 static constexpr auto TetraminoZIndex = 8;
 
 #define COUNT_OF(array) (sizeof(array) / sizeof(array[0]))
+
+// timer values
+static constexpr auto MaxBlinkTime = 0.97f;

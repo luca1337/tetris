@@ -10,9 +10,18 @@ enum class TetraminoType {
     Z
 };
 
-
 enum class DirectionType{
     Left,
     Right,
     Down
+};
+
+enum class StateType{
+    Setup,
+    MainMenu,
+    
+    Play,
+    Check,
+    Blink,
+    Clear,
 };

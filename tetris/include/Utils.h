@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <Constants.h>
+#include <stdint.h>
 
 namespace utils
 {
@@ -71,5 +72,14 @@ namespace utils
         }
 
         return rotatedMatrix;
+    }
+
+    [[nodiscard]] inline static auto Lerp(float a, float b, float t) -> float
+    {
+        // Assicurati che il parametro "t" sia compreso tra 0 e 1
+        t = std::clamp(t, 0.0f, 1.0f);
+
+        // Calcola il risultato dell'interpolaizone lineare
+        return a + t * (b - a);
     }
 }

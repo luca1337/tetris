@@ -1,14 +1,9 @@
-#include <tetraminos/Tetramino.h>
+#include <Tetramino.h>
 #include <Texture.h>
 #include <Utils.h>
 
 #include <SDL2/SDL.h>
-
-struct ivec2
-{
-    int x = {};
-    int y = {};
-};
+#include <glm/vec2.hpp>
 
 auto IterateMatrix(size_t length, const std::function<void(int, int)>& func)
 {
@@ -27,8 +22,9 @@ auto UpdateBlockPosition(const Tetramino& tetramino, int i, int j, int& blockInd
 
     if (tetraminoMatrixIndex == tetramino.GetIndex())
     {
+        const auto padding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
         const auto& block = tetramino.Blocks()[blockIndex++];
-        block->SetPositionOnScreen(tetramino.deltaX + i * BlockSize + (3 * BlockSize), tetramino.deltaY + j * BlockSize);
+        block->SetPositionOnScreen(tetramino.deltaX + i * BlockSize + (padding * BlockSize), tetramino.deltaY + j * BlockSize);
     }
 }
 
@@ -45,8 +41,10 @@ auto BuildTetraminoFromMatrix(SDL_Renderer* sdlRenderer, Tetramino& tetramino, c
 
             if (tetraminoMatrixIndex == tetramino.GetIndex())
             {
-                auto blockTexture = std::make_shared<Texture>(sdlRenderer, BlockSize, BlockSize, tetramino.GetColor());
-                blockTexture->SetPositionOnScreen(i * BlockSize + (3 * BlockSize), j * BlockSize);
+                const auto padding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
+
+                auto blockTexture = std::make_shared<Texture>(sdlRenderer, tetramino.GetTexturePath(), true);
+                blockTexture->SetPositionOnScreen(i * BlockSize + (padding * BlockSize), j * BlockSize);
                 blocks.push_back(blockTexture);
             }
     });
@@ -65,14 +63,14 @@ auto RefreshTetramino(const Tetramino& tetramino)
     });
 }
 
-Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window{window}, m_Type{type}
+Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window{window}, m_Type{type}
 {
     auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
 
     switch (type)
     {
     case TetraminoType::I:
-        m_Color = Cyan;
+        m_Path = "../../tetris/resources/textures/cyan.png";
         m_Index = TetraminoIIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoIMap.size());
         m_OriginalTetraminoMatrix = TetraminoIMap;
@@ -80,7 +78,7 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
         break;
     
     case TetraminoType::J:
-        m_Color = Blue;
+        m_Path = "../../tetris/resources/textures/blue.png";
         m_Index = TetraminoJIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoJMap.size());
         m_OriginalTetraminoMatrix = TetraminoJMap;
@@ -88,7 +86,7 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
         break;
 
     case TetraminoType::L:
-        m_Color = Orange;
+        m_Path = "../../tetris/resources/textures/orange.png";
         m_Index = TetraminoLIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoLMap.size());
         m_OriginalTetraminoMatrix = TetraminoLMap;
@@ -96,7 +94,7 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
         break;
 
     case TetraminoType::O:
-        m_Color = Yellow;
+        m_Path = "../../tetris/resources/textures/yellow.png";
         m_Index = TetraminoOIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoOMap.size());
         m_OriginalTetraminoMatrix = TetraminoOMap;
@@ -104,7 +102,7 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
         break;
 
     case TetraminoType::S:
-        m_Color = Green;
+        m_Path = "../../tetris/resources/textures/green.png";
         m_Index = TetraminoSIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoSMap.size());
         m_OriginalTetraminoMatrix = TetraminoSMap;
@@ -112,7 +110,7 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
         break;
 
     case TetraminoType::T:
-        m_Color = Magenta;
+        m_Path = "../../tetris/resources/textures/magenta.png";
         m_Index = TetraminoTIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoTMap.size());
         m_OriginalTetraminoMatrix = TetraminoTMap;
@@ -120,7 +118,7 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
         break;
 
     case TetraminoType::Z:
-        m_Color = Red;
+        m_Path = "../../tetris/resources/textures/red.png";
         m_Index = TetraminoZIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoZMap.size());
         m_OriginalTetraminoMatrix = TetraminoZMap;
@@ -132,7 +130,31 @@ Tetramino::Tetramino(const Window& window, const TetraminoType& type) : m_Window
     }
 }
 
-auto Tetramino::Translate(const DirectionType& direction) -> void
+Tetramino::Tetramino(const Tetramino& rhs) : m_Window{rhs.m_Window}
+{
+    m_TetraminoMatrix = rhs.m_TetraminoMatrix;
+    m_OriginalTetraminoMatrix = rhs.m_OriginalTetraminoMatrix;
+    m_Type = rhs.m_Type;
+    m_Path = rhs.m_Path;
+    m_Index = rhs.m_Index;
+
+    m_Blocks.clear();
+
+    for (const auto& block : rhs.m_Blocks) 
+    {
+        m_Blocks.push_back(std::make_shared<Texture>(*block));
+    }
+}
+
+auto Tetramino::SetSize(const glm::vec2 &size) -> void
+{
+    for(auto&& block: m_Blocks)
+    {
+        block->SetSize(size);
+    }
+}
+
+auto Tetramino::Translate(const DirectionType &direction) -> void
 {
     int deltaXChange = 0;
     int deltaYChange = 0;
@@ -172,16 +194,9 @@ auto Tetramino::Rotate(const std::vector<uint8_t>& matrixBoard, const DirectionT
     {
     case DirectionType::Right: 
     {
-        // ruoto il tetramino e mi faccio tornare la matrice ruotata, poi devo controllare se effettivamente posso ruotarla, quindi simulo una rotazione
-        // dopodichè con la matrice ruotata controllo se nella mappa a quegli indici ci sono gia' altri indici per cui la matrice andrebbe in collisione
-        // se e' vera la condizione allora ruoto di nuovo, itero il processo finche non trovo un caso che sia vero, qual'ora dovesse tornare false per tutti i casi
-        // non posso ruotare il tetramino (SRS System).
-
-        // attualmente il tetramino non viene mai ruotato, se la rotazione e' bloccata per la presenza di altri tetramini semplicemente l'utente non puo' piu' fare nulla
-
         const auto tempRotatedMatrix = utils::RotateMatrix(m_TetraminoMatrix);
 
-        auto newPositionsToCheck = std::vector<ivec2>{};
+        auto newPositionsToCheck = std::vector<glm::ivec2>{};
 
         const auto rowLength = static_cast<int>(std::sqrt(tempRotatedMatrix.size()));
 
@@ -190,7 +205,7 @@ auto Tetramino::Rotate(const std::vector<uint8_t>& matrixBoard, const DirectionT
 
             if (tetraminoMatrixIndex == GetIndex())
             {
-                newPositionsToCheck.push_back(ivec2{deltaX + i * BlockSize + (3 * BlockSize), deltaY + j * BlockSize});
+                newPositionsToCheck.push_back(glm::ivec2{deltaX + i * BlockSize + (3 * BlockSize), deltaY + j * BlockSize});
             }
         });
 
@@ -236,13 +251,16 @@ auto Tetramino::Reset() -> void
     deltaY = 0;
 }
 
-auto Tetramino::Draw() -> void
+auto Tetramino::Draw(uint8_t alpha) -> void
 {
+    if (!isVisible)
+        return;
+
     auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
 
     for(const auto& block: m_Blocks)
     {
-        block->Draw(sdlRenderer, 0xFF);
+        block->Draw(sdlRenderer, alpha);
     }
 }
 
@@ -261,7 +279,7 @@ auto Tetramino::CanMove(const std::vector<uint8_t>& matrixBoard, const Direction
         constexpr auto minCollisionIndex = 1;
         constexpr auto maxCollisionIndex = 8;
 
-        if ( (matrixValueAtIndex >= minCollisionIndex && matrixValueAtIndex <= maxCollisionIndex) || potentialIndex > matrixBoard.size())
+        if ((matrixValueAtIndex >= minCollisionIndex && matrixValueAtIndex <= maxCollisionIndex) || potentialIndex > matrixBoard.size())
         {
             canMove = false;
             break;
@@ -275,7 +293,7 @@ auto Tetramino::GetBlockPositionInMatrix() -> std::vector<uint8_t>
 {
     auto matrixPositionsIndexes = std::vector<uint8_t>();
 
-    for(const auto& block: m_Blocks)
+    for(auto&& block: m_Blocks)
     {
         const auto [x, y] = block->GetPositionOnScreen();
         
@@ -294,7 +312,7 @@ auto Tetramino::GetBlockPositionInPixels() -> std::vector<std::tuple<int, int>>
 {
     auto positions = std::vector<std::tuple<int, int>>{};
 
-    for(const auto& block: m_Blocks)
+    for(auto&& block: m_Blocks)
     {
         positions.push_back(block->GetPositionOnScreen());
     }

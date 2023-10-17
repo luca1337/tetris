@@ -6,7 +6,7 @@ auto Input::IsKeyPressed(const Window &window, SDL_Keycode key) -> bool
 {
     auto currentKeyState = window.GetKeyState();
 
-    bool pressed = false;
+    auto pressed = false;
 
     if (currentKeyState[SDL_GetScancodeFromKey(key)] && !m_KeyStates[key])
     {

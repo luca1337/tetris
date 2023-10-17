@@ -2,6 +2,7 @@
 
 #include <fsm/base/IState.h>
 #include <Window.h>
+#include <Types.h>
 
 #include <memory>
 
@@ -11,15 +12,15 @@ public:
     FSM(const Window& window);
 
     auto OnStateEnter() -> void override;
-    auto OnStateUpdate() -> std::shared_ptr<IState> override;
+    auto OnStateUpdate(float deltaTime) -> std::shared_ptr<IState> override;
     auto OnStateExit() -> void override;
 
-    auto& State() { return m_State; }
-    const auto& State() const { return m_State; }
+    auto SetState(const StateType, const std::shared_ptr<IState>&) -> void;
+    auto& GetState(const StateType type) { return m_StatesMap[type]; }
 
 protected:
-    Window m_Window = {};
+    const Window& m_Window;
 
 private:
-    std::shared_ptr<IState> m_State = {};
+    std::unordered_map<StateType, std::shared_ptr<IState>> m_StatesMap = {};
 };

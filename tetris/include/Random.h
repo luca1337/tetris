@@ -10,6 +10,9 @@ namespace rng
         template <typename Type>
         static inline Type GenerateRandomNumber(const Type min, const Type max) { return GenerateRandomNumberImpl(min, max, std::is_integral<Type>()); }
 
+        template <typename T>
+        static inline void ShuffleArray(std::vector<T>& arr) { std::shuffle(arr.begin(), arr.end(), m_MtGenerator); }
+
     private:
 
         template <typename Type>
