@@ -2,6 +2,7 @@
 #include <Texture.h>
 #include <Tetramino.h>
 #include <Input.h>
+#include <Utils.h>
 
 #include <ranges>
 #include <algorithm>
@@ -45,11 +46,19 @@ Board::Board(const Window &window) : m_Window{window}
         m_Tetraminos.push_back(std::make_shared<Tetramino>(window, static_cast<TetraminoType>(tetraminoIdx)));
     });
 
+    m_NextTetramino = std::make_shared<Tetramino>(*m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))]);
+    for (auto& block: m_NextTetramino->Blocks())
+    {
+        auto [sx, sy] = block->GetPositionOnScreen();
+        block->SetPositionOnScreen(sx + BlockSize * 9, sy);
+    }
+    
     RandomizeCurrentPlayingTetramino();
 
     m_OriginalMatrix = m_Matrix;
 
     m_GhostTetramino = std::make_shared<Tetramino>(*m_CurrentTetramino);
+
 }
 
 auto Board::Draw() -> void
@@ -69,7 +78,7 @@ auto Board::Draw() -> void
             if (m_IsBlinking)
             {
                 const auto foundIdx = std::find(m_RowsToClear.begin(), m_RowsToClear.end(), rowIdx);
-                if (foundIdx != m_RowsToClear.end() && (columnIdx > 0 && columnIdx < Columns - 1))
+                if (foundIdx != m_RowsToClear.end() && utils::IsValueBetween(static_cast<int>(columnIdx), 1, Columns - 2)) // skip borders (gray walls)
                 {
                     continue;
                 }
@@ -91,7 +100,13 @@ auto Board::RandomizeCurrentPlayingTetramino() -> void
 {
     rng::RNG::ShuffleArray(m_Tetraminos);
 
-    m_NextTetramino = m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))];
+    m_CurrentTetramino = std::make_shared<Tetramino>(*m_NextTetramino);
+    m_CurrentTetramino->Reset();
 
-    m_CurrentTetramino = m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))];
+    m_NextTetramino = std::make_shared<Tetramino>(*m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))]);
+    for (auto& block: m_NextTetramino->Blocks())
+    {
+        auto [sx, sy] = block->GetPositionOnScreen();
+        block->SetPositionOnScreen(sx + BlockSize * 9, sy);
+    }
 }

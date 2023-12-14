@@ -9,7 +9,7 @@
 #include <SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
-Window::Window() : m_Props({ 500, 600 })
+Window::Window() : m_Props({ 530, 600 })
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
 	{

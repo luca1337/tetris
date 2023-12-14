@@ -36,7 +36,7 @@ auto StateBlink::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
     {
         for (auto columnIdx = 1ul; columnIdx != (Columns - 1); columnIdx++)
         {
-            // Qui applico l'effetto di blink ai blocchi da eliminare
+            // Qui applico l'effetto di blink ai blocchi da eliminare f(x) = 255 * (sin(x) / x^2)
 
             int index = row * Columns + columnIdx;
 
