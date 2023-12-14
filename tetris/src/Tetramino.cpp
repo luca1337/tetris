@@ -22,9 +22,11 @@ auto UpdateBlockPosition(const Tetramino& tetramino, int i, int j, int& blockInd
 
     if (tetraminoMatrixIndex == tetramino.GetIndex())
     {
-        const auto padding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
+        const auto xPadding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
+        const auto yPadding = (tetramino.GetType() == TetraminoType::O || tetramino.GetType() == TetraminoType::Z || tetramino.GetType() == TetraminoType::S) ? 1 : 0;
+
         const auto& block = tetramino.Blocks()[blockIndex++];
-        block->SetPositionOnScreen(tetramino.deltaX + i * BlockSize + (padding * BlockSize), tetramino.deltaY + j * BlockSize);
+        block->SetPositionOnScreen(tetramino.deltaX + i * BlockSize + (xPadding * BlockSize), tetramino.deltaY + j * BlockSize + (yPadding * BlockSize));
     }
 }
 
@@ -41,10 +43,11 @@ auto BuildTetraminoFromMatrix(SDL_Renderer* sdlRenderer, Tetramino& tetramino, c
 
             if (tetraminoMatrixIndex == tetramino.GetIndex())
             {
-                const auto padding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
+                const auto xPadding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
+                const auto yPadding = (tetramino.GetType() == TetraminoType::O || tetramino.GetType() == TetraminoType::Z || tetramino.GetType() == TetraminoType::S) ? 1 : 0;
 
                 auto blockTexture = std::make_shared<Texture>(sdlRenderer, tetramino.GetTexturePath(), true);
-                blockTexture->SetPositionOnScreen(i * BlockSize + (padding * BlockSize), j * BlockSize);
+                blockTexture->SetPositionOnScreen(i * BlockSize + (xPadding * BlockSize), j * BlockSize + (yPadding * BlockSize));
                 blocks.push_back(blockTexture);
             }
     });
@@ -215,7 +218,7 @@ auto Tetramino::Rotate(const std::vector<uint8_t>& matrixBoard, const DirectionT
             const auto y = pos.y / BlockSize;
             const auto matrixIndex = y * Columns + x;
 
-            if ( (matrixBoard[matrixIndex] >= 1 && matrixBoard[matrixIndex] <= 8) || matrixIndex > matrixBoard.size() )
+            if ((utils::IsValueBetween(static_cast<int>(matrixBoard[matrixIndex]), 1, 8)) || matrixIndex > matrixBoard.size())
             {
                 canRotate = false;
                 break;

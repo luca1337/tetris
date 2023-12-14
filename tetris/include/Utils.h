@@ -74,12 +74,15 @@ namespace utils
         return rotatedMatrix;
     }
 
-    [[nodiscard]] inline static auto Lerp(float a, float b, float t) -> float
+    [[nodiscard]] inline static auto Lerp(float a, float b, float t)
     {
-        // Assicurati che il parametro "t" sia compreso tra 0 e 1
         t = std::clamp(t, 0.0f, 1.0f);
-
-        // Calcola il risultato dell'interpolaizone lineare
         return a + t * (b - a);
+    }
+
+    template <typename Val>
+    [[nodiscard]] inline static auto IsValueBetween(const Val& value, const Val& min, const Val& max) -> std::enable_if_t<std::is_arithmetic_v<Val>, bool>
+    {
+        return (value >= min) && (value <= max);
     }
 }

@@ -45,7 +45,7 @@ Board::Board(const Window &window) : m_Window{window}
         m_Tetraminos.push_back(std::make_shared<Tetramino>(window, static_cast<TetraminoType>(tetraminoIdx)));
     });
 
-    ShuffleCurrentPlayingTetramino();
+    RandomizeCurrentPlayingTetramino();
 
     m_OriginalMatrix = m_Matrix;
 
@@ -57,6 +57,8 @@ auto Board::Draw() -> void
     const auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
 
     m_CurrentTetramino->Draw();
+
+    m_NextTetramino->Draw();
 
     m_GhostTetramino->Draw(0xFF*1/3);
 
@@ -85,8 +87,11 @@ auto Board::Draw() -> void
     }
 }
 
-auto Board::ShuffleCurrentPlayingTetramino() -> void
+auto Board::RandomizeCurrentPlayingTetramino() -> void
 {
     rng::RNG::ShuffleArray(m_Tetraminos);
+
+    m_NextTetramino = m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))];
+
     m_CurrentTetramino = m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))];
 }

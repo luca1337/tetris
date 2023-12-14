@@ -46,6 +46,6 @@ auto StateClear::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
 auto StateClear::OnStateExit() -> void
 {
     m_Board.GetCurrentPlayingTetramino()->isVisible = true;
-    m_Board.ShuffleCurrentPlayingTetramino();
+    m_Board.RandomizeCurrentPlayingTetramino();
     m_Board.RowsToClear().clear();
 }

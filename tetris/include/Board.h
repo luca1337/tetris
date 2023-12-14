@@ -31,7 +31,7 @@ public:
     auto& RowsToClear() { return m_RowsToClear; }
     const auto& RowsToClear() const { return m_RowsToClear; }
 
-    auto ShuffleCurrentPlayingTetramino() -> void;
+    auto RandomizeCurrentPlayingTetramino() -> void;
 
     bool m_IsBlinking = {};
 

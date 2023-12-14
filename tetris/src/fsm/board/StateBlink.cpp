@@ -36,10 +36,12 @@ auto StateBlink::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
     {
         for (auto columnIdx = 1ul; columnIdx != (Columns - 1); columnIdx++)
         {
+            // Qui applico l'effetto di blink ai blocchi da eliminare
+
             int index = row * Columns + columnIdx;
 
             auto& block = m_Board.GetTextureMap()[boardMatrix[index]];
-            const auto alphaMod = static_cast<uint8_t>(abs((std::numeric_limits<uint8_t>::max() * sin(m_BlinkTimer) / pow(m_BlinkTimer, 2))));
+            const auto alphaMod = static_cast<uint8_t>(std::abs((std::numeric_limits<uint8_t>::max() * std::sin(m_BlinkTimer) / std::pow(m_BlinkTimer, 2))));
             
             block->SetPositionOnScreen(columnIdx * BlockSize, row * BlockSize);
             block->Draw(sdlRenderer, alphaMod);

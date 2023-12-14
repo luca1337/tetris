@@ -63,5 +63,5 @@ auto StateCheck::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
 
 auto StateCheck::OnStateExit() -> void
 {
-    m_Board.ShuffleCurrentPlayingTetramino();
+    m_Board.RandomizeCurrentPlayingTetramino();
 }
