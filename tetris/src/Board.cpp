@@ -10,6 +10,9 @@
 
 #include <Random.h>
 
+constexpr int X_UNIT_PADDING = 8;
+constexpr int Y_UNIT_PADDING = 18;
+
 Board::Board(const Window &window) : m_Window{window}
 {
     const auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
@@ -62,7 +65,7 @@ Board::Board(const Window &window) : m_Window{window}
     for (auto& block: m_NextTetramino->Blocks())
     {
         auto [sx, sy] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(sx + BlockSize * 9, sy + BlockSize * 18);
+        block->SetPositionOnScreen(sx + BlockSize * X_UNIT_PADDING, sy + BlockSize * Y_UNIT_PADDING);
     }
     
     RandomizeCurrentPlayingTetramino();
@@ -127,6 +130,6 @@ auto Board::RandomizeCurrentPlayingTetramino() -> void
     for (auto& block: m_NextTetramino->Blocks())
     {
         auto [sx, sy] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(sx + BlockSize * 9, sy + BlockSize * 15);
+        block->SetPositionOnScreen(sx + BlockSize * X_UNIT_PADDING, sy + BlockSize * Y_UNIT_PADDING);
     }
 }
