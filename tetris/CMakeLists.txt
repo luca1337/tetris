@@ -13,6 +13,7 @@ add_executable(tetris
     "src/Input.cpp"
     "src/Tetramino.cpp"
     "src/Timer.cpp"
+    "src/StatsManager.cpp"
 
     "src/RenderText.cpp"
 
@@ -35,6 +36,7 @@ add_executable(tetris
     "include/Constants.h"
     "include/Types.h"
     "include/Utils.h"
+    "include/StatsManager.h"
 
     "include/gui/MenuItem.h"
     "include/gui/MenuSettingsPage.h"
