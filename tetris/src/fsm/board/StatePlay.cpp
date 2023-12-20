@@ -8,8 +8,6 @@ StatePlay::StatePlay(const Window& window, Board& board) : FSM{window}, m_Board{
 
 auto StatePlay::OnStateEnter() -> void
 {
-    SDL_Log("Entering in State Play");
-
     m_PlaceTimer.Reset();
     m_MoveDownTimer.Reset();
     m_ShouldMoveDown = true;
@@ -95,7 +93,4 @@ auto StatePlay::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
     return m_NextState;
 }
 
-auto StatePlay::OnStateExit() -> void 
-{
-
-}
+auto StatePlay::OnStateExit() -> void { }

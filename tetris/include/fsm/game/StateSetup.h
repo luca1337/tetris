@@ -17,6 +17,7 @@ public:
     auto OnStateExit() -> void override {}
 
 private:
+    std::shared_ptr<RenderText> m_TetrisText = {};
     std::shared_ptr<RenderText> m_NintendoText = {};
     std::shared_ptr<RenderText> m_PressToSkipText = {};
     float m_ScrollTextTimer = {};

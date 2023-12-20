@@ -45,4 +45,6 @@ private:
     std::shared_ptr<Tetramino> m_GhostTetramino = {};
     std::vector<std::shared_ptr<Tetramino>> m_Tetraminos = {};
     std::unordered_map<uint8_t, std::shared_ptr<Texture>> m_TextureMap = {};
+
+    std::shared_ptr<Texture> m_StatsBgTexture = {};
 };

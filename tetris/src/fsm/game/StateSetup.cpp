@@ -9,14 +9,21 @@ StateSetup::StateSetup(const Window &window) : FSM{window}
     m_NintendoText = std::make_shared<RenderText>(window.GetRendererHandle(), "../../tetris/resources/fonts/nintendo.ttf", 64);
     if (!m_NintendoText)
     {
-        SDL_Log("Couldn't create text");
+        SDL_Log("Couldn't create text m_NintendoText");
         return;
     }
 
     m_PressToSkipText = std::make_shared<RenderText>(window.GetRendererHandle(), "../../tetris/resources/fonts/nintendo.ttf", 16);
     if (!m_PressToSkipText)
     {
-        SDL_Log("Couldn't create text");
+        SDL_Log("Couldn't create text m_PressToSkipText");
+        return;
+    }
+
+    m_TetrisText = std::make_shared<RenderText>(window.GetRendererHandle(), "../../tetris/resources/fonts/nintendo.ttf", 16);
+    if (!m_TetrisText)
+    {
+        SDL_Log("Couldn't create text m_TetrisText");
         return;
     }
 }

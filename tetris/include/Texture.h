@@ -49,6 +49,7 @@ public:
 	auto SetPositionOnScreen(int x, int y) -> void;
 
 	auto GetPositionOnScreen() const -> std::tuple<int, int> { return std::make_tuple(m_Quad.x, m_Quad.y); }
+	auto GetSizeInPixel() const { return std::make_tuple(m_Quad.w, m_Quad.h); }
 
 private:
 	int m_Width = {};

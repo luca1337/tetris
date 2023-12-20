@@ -27,6 +27,18 @@ Board::Board(const Window &window) : m_Window{window}
         {TetraminoZIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/red.png", true)},
     };
 
+    m_StatsBgTexture = std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/tetris_stats_bg.png", true);
+    if (!m_StatsBgTexture)
+    {
+        SDL_Log("Couldn't create Stats Background Texture..");
+        return;
+    }
+
+    auto [texWidth, texHeight] = m_StatsBgTexture->GetSizeInPixel();
+    auto [texPosX, texPosY] = m_StatsBgTexture->GetPositionOnScreen();
+
+    m_StatsBgTexture->SetPositionOnScreen((texPosX + window.Props().width - texWidth) - 1, texPosY);
+
     for (auto rowIdx = 0ul; rowIdx != Rows; ++rowIdx)
     {
         for (auto columnIdx = 0ul; columnIdx != Columns; ++columnIdx)
@@ -50,7 +62,7 @@ Board::Board(const Window &window) : m_Window{window}
     for (auto& block: m_NextTetramino->Blocks())
     {
         auto [sx, sy] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(sx + BlockSize * 9, sy);
+        block->SetPositionOnScreen(sx + BlockSize * 9, sy + BlockSize * 18);
     }
     
     RandomizeCurrentPlayingTetramino();
@@ -65,11 +77,19 @@ auto Board::Draw() -> void
 {
     const auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
 
+#pragma region UI
+
+    m_StatsBgTexture->Draw(sdlRenderer, 0xff*1/2); 
+
+#pragma endregion
+
+#pragma region TETRAMINOS
+
     m_CurrentTetramino->Draw();
-
     m_NextTetramino->Draw();
-
     m_GhostTetramino->Draw(0xFF*1/3);
+
+#pragma endregion
 
     for (auto rowIdx = 0ul; rowIdx != Rows; ++rowIdx)
     {
@@ -107,6 +127,6 @@ auto Board::RandomizeCurrentPlayingTetramino() -> void
     for (auto& block: m_NextTetramino->Blocks())
     {
         auto [sx, sy] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(sx + BlockSize * 9, sy);
+        block->SetPositionOnScreen(sx + BlockSize * 9, sy + BlockSize * 15);
     }
 }
