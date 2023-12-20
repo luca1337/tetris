@@ -45,10 +45,29 @@ public:
 	 */
 	auto Draw(SDL_Renderer* sdlRenderer, uint8_t alpha) const -> void;
 
+	/**
+	 * \brief Sets the size of the object using a 2D vector
+	 * \param size A 2D vector representing the width and height of the object
+	 */
 	auto SetSize(const glm::vec2& size) { m_Quad.w = size.x; m_Quad.h = size.y; }
+
+	/**
+	 * \brief Sets the position of the object on the screen
+	 * \param x The x-coordinate of the position
+	 * \param y The y-coordinate of the position
+	 */
 	auto SetPositionOnScreen(int x, int y) -> void;
 
+	/**
+	 * \brief Gets the position of the object on the screen
+	 * \return A tuple containing the x and y coordinates of the position
+	 */
 	auto GetPositionOnScreen() const -> std::tuple<int, int> { return std::make_tuple(m_Quad.x, m_Quad.y); }
+
+	/**
+	 * \brief Gets the size of the object in pixels
+	 * \return A tuple containing the width and height of the object
+	 */
 	auto GetSizeInPixel() const { return std::make_tuple(m_Quad.w, m_Quad.h); }
 
 private:
