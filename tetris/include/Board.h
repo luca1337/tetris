@@ -10,6 +10,7 @@
 class Tetramino;
 class Texture;
 class Block;
+class StatsManager;
 
 class Board 
 {
@@ -47,4 +48,6 @@ private:
     std::unordered_map<uint8_t, std::shared_ptr<Texture>> m_TextureMap = {};
 
     std::shared_ptr<Texture> m_StatsBgTexture = {};
+
+    std::shared_ptr<StatsManager> m_StatsManager = {};
 };

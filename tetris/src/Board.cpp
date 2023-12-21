@@ -2,6 +2,7 @@
 #include <Texture.h>
 #include <Tetramino.h>
 #include <Input.h>
+#include <StatsManager.h>
 #include <Utils.h>
 
 #include <ranges>
@@ -10,8 +11,8 @@
 
 #include <Random.h>
 
-constexpr int X_UNIT_PADDING = 8;
-constexpr int Y_UNIT_PADDING = 18;
+constexpr int X_UNIT_PADDING = 9;
+constexpr int Y_UNIT_PADDING = 15;
 
 Board::Board(const Window &window) : m_Window{window}
 {
@@ -74,6 +75,7 @@ Board::Board(const Window &window) : m_Window{window}
 
     m_GhostTetramino = std::make_shared<Tetramino>(*m_CurrentTetramino);
 
+    m_StatsManager = std::make_shared<StatsManager>(window);
 }
 
 auto Board::Draw() -> void
@@ -83,6 +85,8 @@ auto Board::Draw() -> void
 #pragma region UI
 
     m_StatsBgTexture->Draw(sdlRenderer, 0xff*1/2); 
+
+    m_StatsManager->Draw();
 
 #pragma endregion
 
