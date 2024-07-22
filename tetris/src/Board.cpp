@@ -20,7 +20,7 @@ Board::Board(const Window &window) : m_Window{window}
 
     m_TextureMap = std::unordered_map<uint8_t, std::shared_ptr<Texture>>
     {
-        //{BackgroundIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/bg.png", true)},
+        {BackgroundIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/bg.png", true)},
         {BoundIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/gray.png", true)},
         {TetraminoIIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/cyan.png", true)},
         {TetraminoJIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/blue.png", true)},

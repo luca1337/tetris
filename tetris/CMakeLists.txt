@@ -57,6 +57,7 @@ add_executable(tetris
     "include/Random.h"
     "include/Tetramino.h"
     "include/Timer.h"
+    "include/Resource.h"
 )
 
 target_compile_features(tetris PRIVATE cxx_std_23)

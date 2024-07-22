@@ -1,18 +1,18 @@
 {
-    "name": "test",
+    "name": "tetris",
     "version": "1.0.0",
     "dependencies": [
-      {
-        "name": "sdl2"
-      },
-      {
-        "name": "sdl2-ttf"
-      },
-      {
-        "name": "sdl2-image"
-      },
-      {
-        "name": "glm"
-      }
+        {
+            "name": "glm"
+        },
+        {
+            "name": "sdl2"
+        },
+        {
+            "name": "sdl2-ttf"
+        },
+        {
+            "name": "sdl2-image"
+        }
     ]
 }

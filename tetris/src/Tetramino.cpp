@@ -277,12 +277,18 @@ auto Tetramino::CanMove(const std::vector<uint8_t>& matrixBoard, const Direction
                               (direction == DirectionType::Left) ? index - 1 :
                               (direction == DirectionType::Down) ? index + Columns : index;
 
+        if (potentialIndex > matrixBoard.size())
+        {
+            canMove = false;
+            break;
+        }
+
         const auto matrixValueAtIndex = matrixBoard[potentialIndex];
 
         constexpr auto minCollisionIndex = 1;
         constexpr auto maxCollisionIndex = 8;
 
-        if ((matrixValueAtIndex >= minCollisionIndex && matrixValueAtIndex <= maxCollisionIndex) || potentialIndex > matrixBoard.size())
+        if (matrixValueAtIndex >= minCollisionIndex && matrixValueAtIndex <= maxCollisionIndex)
         {
             canMove = false;
             break;

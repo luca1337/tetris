@@ -62,8 +62,6 @@ auto Window::Update(const std::function<void(float)>& renderHook) -> void
 	auto deltaTime = 0.0;
 	auto prevTime = SDL_GetPerformanceCounter();
 
-	float timer = 0.0f;
-
 	while (m_IsOpen)
 	{
 		SDL_Event ev;
@@ -76,7 +74,7 @@ auto Window::Update(const std::function<void(float)>& renderHook) -> void
 		}
 
 		// Calcola delta time
-		Uint64 currentTime = SDL_GetPerformanceCounter();
+		const auto currentTime = SDL_GetPerformanceCounter();
 		deltaTime = static_cast<double>(currentTime - prevTime) / SDL_GetPerformanceFrequency();
 		prevTime = currentTime;
 

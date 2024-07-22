@@ -1,7 +1,9 @@
 {
     "cmake.configureArgs": [
-        "-DCMAKE_TOOLCHAIN_FILE=C:\\Users\\Luca\\Documents\\GitHub\\tetris\\extlib\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+        "-DCMAKE_TOOLCHAIN_FILE=C:/Users/Luca/Documents/GitHub/tetris/extlib/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "-DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/ninja.exe"
     ],
+    "cmake.generator": "Ninja",
     "files.associations": {
         "iostream": "cpp",
         "array": "cpp",
@@ -65,7 +67,31 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "ranges": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "filesystem": "cpp",
+        "forward_list": "cpp",
+        "ios": "cpp",
+        "list": "cpp",
+        "locale": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xmemory": "cpp",
+        "xstring": "cpp",
+        "xtr1common": "cpp",
+        "xutility": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "shared_mutex": "cpp",
+        "text_encoding": "cpp"
     },
-    "C_Cpp.errorSquiggles": "disabled"
+    "C_Cpp.errorSquiggles": "disabled",
+    "cmake.configureOnOpen": true
 }
