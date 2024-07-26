@@ -1,6 +1,6 @@
 {
     "cmake.configureArgs": [
-        "-DCMAKE_TOOLCHAIN_FILE=C:/Users/Luca/Documents/GitHub/tetris/extlib/vcpkg/scripts/buildsystems/vcpkg.cmake",
+        "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/extlib/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "-DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/ninja.exe"
     ],
     "cmake.generator": "Ninja",

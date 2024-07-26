@@ -6,7 +6,6 @@ RenderText::~RenderText()
 {
     if (m_Surface) { SDL_FreeSurface(m_Surface); }
     if (m_CopyTexture) { SDL_DestroyTexture(m_CopyTexture); }
-    if (m_Font) { TTF_CloseFont(m_Font); }
 }
 
 RenderText::RenderText(SDL_Renderer *renderer, const std::string &fontPath, const int fontSize) : m_Renderer{renderer}
