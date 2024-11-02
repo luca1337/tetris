@@ -12,9 +12,9 @@ public:
     ~StateSetup() = default;
     StateSetup(const Window& window);
 
-    auto OnStateEnter() -> void override {}
+    auto OnStateEnter() -> void override;
     auto OnStateUpdate(float deltaTime) -> std::shared_ptr<IState> override;
-    auto OnStateExit() -> void override {}
+    auto OnStateExit() -> void override;
 
 private:
     std::shared_ptr<RenderText> m_TetrisText = {};

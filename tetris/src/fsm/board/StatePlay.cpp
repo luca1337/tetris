@@ -3,11 +3,22 @@
 #include <Board.h>
 #include <Input.h>
 #include <Types.h>
+#include <ResourceManager.h>
+#include <AudioTrack.h>
 
 StatePlay::StatePlay(const Window& window, Board& board) : FSM{window}, m_Board{board}, m_PlaceTimer{0.5f}, m_MoveDownTimer{0.2f} { }
 
 auto StatePlay::OnStateEnter() -> void
 {
+    // Setup and play music for this state (classical tetris music loop)
+    if (const auto playTheme = ResourceManager::GetFromCache<AudioTrack>({ResourceType::Audio, "Play"}).value())
+    {
+        if (!playTheme->IsPlaying()) 
+        {
+            playTheme->Play(true); 
+        }
+    }
+
     m_PlaceTimer.Reset();
     m_MoveDownTimer.Reset();
     m_ShouldMoveDown = true;

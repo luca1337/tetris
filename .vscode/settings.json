@@ -1,7 +1,8 @@
 {
     "cmake.configureArgs": [
         "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/extlib/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "-DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/ninja.exe"
+        "-DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/ninja.exe",
+        "-DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic"
     ],
     "cmake.generator": "Ninja",
     "files.associations": {
@@ -90,8 +91,16 @@
         "map": "cpp",
         "set": "cpp",
         "shared_mutex": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "source_location": "cpp",
+        "fstream": "cpp",
+        "bitset": "cpp",
+        "future": "cpp",
+        "*.inc": "cpp",
+        "complex": "cpp",
+        "expected": "cpp",
+        "xtree": "cpp"
     },
-    "C_Cpp.errorSquiggles": "disabled",
+    "C_Cpp.errorSquiggles": "enabled",
     "cmake.configureOnOpen": true
 }

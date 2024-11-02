@@ -2,10 +2,19 @@
 #include <Tetramino.h>
 #include <Board.h>
 #include <Input.h>
+#include <StatsManager.h>
 #include <Types.h>
-#include <Texture.h>
+#include <Sprite.h>
+#include <rendering/Shader.h>
+#include <ResourceManager.h>
+#include <AudioTrack.h>
+#include <rendering/ParticleSystem.h>
+#include <Random.h>
+#include <Constants.h>
 
-StateBlink::StateBlink(const Window& window, Board& board) : FSM{window}, m_Board{board}
+#include <iostream>
+
+StateBlink::StateBlink(const Window &window, Board &board) : FSM{window}, m_Board{board}
 {
     m_Board.RowsToClear().clear();
     m_BlinkTimer = {};
@@ -14,15 +23,23 @@ StateBlink::StateBlink(const Window& window, Board& board) : FSM{window}, m_Boar
 auto StateBlink::OnStateEnter() -> void
 {
     m_Board.m_IsBlinking = true;
+
+    const auto clearFx = ResourceManager::GetFromCache<AudioTrack>({ResourceType::Audio, "Clear"});
+    if (clearFx.has_value())
+    {
+        const auto clearFxValue = clearFx.value();
+
+        clearFxValue->Play(); 
+    }
 }
+
+float minX, maxX, minY, maxY;
 
 auto StateBlink::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
 {
-    const auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
+    const auto spriteShader = ResourceManager::GetFromCache<Shader>({ResourceType::Shader, "SpriteShader"});
 
-    const auto& currentTetramino = m_Board.GetCurrentPlayingTetramino();
-
-    auto& boardMatrix = m_Board.Matrix();
+    auto &boardMatrix = m_Board.Matrix();
 
     m_BlinkTimer += deltaTime;
 
@@ -32,24 +49,32 @@ auto StateBlink::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
         return GetState(StateType::Clear);
     }
 
-    for (const auto row : m_Board.RowsToClear())
+    const auto rowsToClear = m_Board.RowsToClear();
+    const auto numOfRowsToClear = rowsToClear.size();
+
+    for (auto i = 0ul; i != numOfRowsToClear; ++i)
     {
+        auto row = rowsToClear[i];
+
         for (auto columnIdx = 1ul; columnIdx != (Columns - 1); columnIdx++)
         {
-            // Qui applico l'effetto di blink ai blocchi da eliminare f(x) = 255 * (sin(x) / x^2)
-
             int index = row * Columns + columnIdx;
 
-            auto textureMap = m_Board.GetTextureMap();
-            auto it = textureMap.find(boardMatrix[index]);
+            auto spriteMap = m_Board.GetSpriteMap();
+            auto it = spriteMap.find(index);
 
-            if (it != textureMap.end() && it->second)
+            const float k = 2.0f;
+            const float initialFrequency = 10.0f;
+
+            if (it != spriteMap.end() && it->second)
             {
-                auto& block = it->second;
-                const auto alphaMod = static_cast<uint8_t>(std::abs((std::numeric_limits<uint8_t>::max() * std::sin(m_BlinkTimer) / std::pow(m_BlinkTimer, 2))));
+                auto &block = it->second;
+                const auto frequency = initialFrequency * std::exp(k * m_BlinkTimer);
+                const auto alphaMod = (1.0f / std::exp(k * m_BlinkTimer)) * std::abs(std::sin(frequency * m_BlinkTimer));
 
-                block->SetPositionOnScreen(columnIdx * BlockSize, row * BlockSize);
-                block->Draw(sdlRenderer, alphaMod);
+                float blockX = columnIdx * BlockSize;
+                block->SetAlpha(alphaMod);
+                block->Render(spriteShader.value());
             }
         }
     }
@@ -60,5 +85,5 @@ auto StateBlink::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
 auto StateBlink::OnStateExit() -> void
 {
     m_BlinkTimer = {};
-    m_Board.m_IsBlinking = false;
+    m_Board.m_IsBlinking = {};
 }

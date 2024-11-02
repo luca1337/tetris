@@ -3,6 +3,7 @@
 #include <Board.h>
 #include <Input.h>
 #include <Types.h>
+#include <Sprite.h>
 
 StateClear::StateClear(const Window& window, Board& board) : FSM{window}, m_Board{board} { }
 
@@ -14,6 +15,19 @@ auto StateClear::OnStateEnter() -> void
 auto StateClear::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
 {
     auto& boardMatrix = m_Board.Matrix();
+
+    for (auto&& y : m_Board.RowsToClear())
+    {
+        for (size_t x = 1; x != Columns - 1; x++)
+        {
+            auto currentColumnIdx = y * Columns + x;
+            
+            if (m_Board.GetSpriteMap().contains(currentColumnIdx))
+            {
+                m_Board.GetSpriteMap().erase(currentColumnIdx);
+            }
+        }
+    }
 
     for (auto&& y : m_Board.RowsToClear())
     {
@@ -34,6 +48,26 @@ auto StateClear::OnStateUpdate(float deltaTime) -> std::shared_ptr<IState>
 
             memmove(&boardMatrix[destIndex], &boardMatrix[srcIndex], rowSizeInBytes);
             memset(&boardMatrix[srcIndex], 0, rowSizeInBytes);
+        }
+    }
+
+    for (auto&& y : m_Board.RowsToClear())
+    {
+        for (auto columnIdx = y; columnIdx != 0; columnIdx--)
+        {
+            for (auto x = 1UL; x != Columns - 1; x++)
+            {
+                auto srcIndex = (columnIdx * Columns + x);
+                auto destIndex = ((columnIdx + 1) * Columns + x);
+
+                if (m_Board.GetSpriteMap().contains(srcIndex))
+                {
+                    auto sprite = m_Board.GetSpriteMap()[srcIndex];
+                    m_Board.GetSpriteMap().erase(srcIndex);
+                    sprite->SetLocalTranslation(x * BlockSize, (columnIdx + 1) * BlockSize);
+                    m_Board.GetSpriteMap()[destIndex] = sprite;
+                }
+            }
         }
     }
 

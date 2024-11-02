@@ -1,6 +1,7 @@
 #pragma once
 
-enum class TetraminoType {
+enum class TetraminoType
+{
     I,
     J,
     L,
@@ -10,18 +11,41 @@ enum class TetraminoType {
     Z
 };
 
-enum class DirectionType{
+enum class DirectionType
+{
     Left,
     Right,
     Down
 };
 
-enum class StateType{
+enum class StateType
+{
     Setup,
-    MainMenu,
-    
+
     Play,
     Check,
     Blink,
     Clear,
+};
+
+enum class PostProcessingType
+{
+    cctv,
+    chroma,
+    edge_detection,
+    embossing
+};
+
+enum class ResourceType
+{
+    Shader,
+    Texture,  
+    Audio
+};
+
+enum ShapeType
+{
+    None,
+    Circle,
+    HalfCircle,
 };

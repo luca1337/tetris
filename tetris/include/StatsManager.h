@@ -19,8 +19,10 @@ public:
     StatsManager(const StatsManager&) = delete;
     StatsManager(StatsManager&&) = delete;
 
-    auto UpdateScoreboard(const ScoreboardTextType, const unsigned newScore) -> void;
+    auto UpdateScoreboard(const unsigned lines) -> void;
     auto Draw() -> void;
+
+    auto GetLevel() const { return m_Level; }
 
 private:
     const Window& m_Window;
@@ -28,4 +30,8 @@ private:
     std::shared_ptr<RenderText> m_ScoreText = {};
     std::shared_ptr<RenderText> m_LevelText = {};
     std::shared_ptr<RenderText> m_LinesText = {};
+
+    unsigned m_Score= {};
+    unsigned m_Level= 1;
+    unsigned m_LinesCompleted= {};
 };

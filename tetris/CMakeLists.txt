@@ -1,68 +1,36 @@
 cmake_minimum_required(VERSION 3.18)
 
+project(tetris VERSION 0.1.0 LANGUAGES C CXX)
+
 find_package(glm CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
 find_package(SDL2_image CONFIG REQUIRED)
 find_package(SDL2_ttf CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_package(SDL2_mixer CONFIG REQUIRED)
 
-add_executable(tetris 
-    "src/main.cpp"
-    "src/Texture.cpp"
-    "src/Window.cpp"
-    "src/Board.cpp"
-    "src/Input.cpp"
-    "src/Tetramino.cpp"
-    "src/Timer.cpp"
-    "src/StatsManager.cpp"
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
-    "src/RenderText.cpp"
+# Trova tutti i file .cpp e .h nelle directory dei sorgenti e degli include
+file(GLOB_RECURSE SOURCES ${SOURCE_DIR}/*.cpp ${INCLUDE_DIR}/*.h)
 
-    "src/gui/MenuItem.cpp"
-    "src/gui/MenuSettingsPage.cpp"
+# Aggiungi l'eseguibile
+add_executable(tetris ${SOURCES})
 
-    "src/fsm/base/FSM.cpp"
-    "src/fsm/board/StatePlay.cpp"
-    "src/fsm/board/StateCheck.cpp"
-    "src/fsm/board/StateBlink.cpp"
-    "src/fsm/board/StateClear.cpp"
-    "src/fsm/game/StateSetup.cpp"
-    "src/fsm/game/StateMainMenu.cpp"
-
-    "src/game/Game.cpp"
-    "include/Window.h"
-    "include/Texture.h"
-    "include/Board.h"
-    "include/stb_image.h"
-    "include/Constants.h"
-    "include/Types.h"
-    "include/Utils.h"
-    "include/StatsManager.h"
-
-    "include/gui/MenuItem.h"
-    "include/gui/MenuSettingsPage.h"
-
-    "include/fsm/base/FSM.h"
-    "include/fsm/base/IState.h"
-    "include/fsm/board/StatePlay.h"
-    "include/fsm/board/StateCheck.h"
-    "include/fsm/board/StateBlink.h"
-    "include/fsm/board/StateClear.h"
-    "include/fsm/game/StateSetup.h"
-    "include/fsm/game/StateMainMenu.h"
-
-    "include/RenderText.h"
-
-    "include/game/Game.h"
-    "include/Input.h"
-    "include/Random.h"
-    "include/Tetramino.h"
-    "include/Timer.h"
-    "include/Resource.h"
-)
+# Includi le directory degli header
+target_include_directories(tetris PRIVATE ${INCLUDE_DIR})
 
 target_compile_features(tetris PRIVATE cxx_std_23)
 
-target_link_libraries(tetris PRIVATE glm::glm)
-target_link_libraries(tetris PRIVATE SDL2::SDL2main SDL2::SDL2)
-target_link_libraries(tetris PRIVATE SDL2_image::SDL2_image)
-target_link_libraries(tetris PRIVATE SDL2_ttf::SDL2_ttf)
+target_link_libraries(tetris PRIVATE 
+    glm::glm 
+    SDL2::SDL2 
+    SDL2_image::SDL2_image 
+    SDL2_ttf::SDL2_ttf
+    glad::glad
+    spdlog::spdlog
+    SDL2_mixer::SDL2_mixer
+)
+
+target_compile_definitions(tetris PUBLIC GLM_ENABLE_EXPERIMENTAL)

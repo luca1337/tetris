@@ -1,181 +1,61 @@
 #include <Texture.h>
 
+#include <Logger.h>
+#include <GLUtils.h>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 Texture::~Texture()
 {
-    if (m_SdlTexture)
-    {
-        SDL_DestroyTexture(m_SdlTexture);
-    }
+    glDeleteTextures(1, &m_TextureID);
 }
 
-Texture::Texture(const Texture& other)
+Texture::Texture(const Texture &other) : m_Width(other.m_Width), m_Height(other.m_Height)
 {
-    m_Width = other.m_Width;
-    m_Height = other.m_Height;
-    m_Color = other.m_Color;
-    m_SdlRenderer = other.m_SdlRenderer;
-    m_IsLoadedFromFile = other.m_IsLoadedFromFile;
-    m_UseBlending = other.m_UseBlending;
+    glGenTextures(1, &m_TextureID);
+    glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
-    if (!m_IsLoadedFromFile)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glCopyImageSubData(other.m_TextureID, GL_TEXTURE_2D, 0, 0, 0, 0, m_TextureID, GL_TEXTURE_2D, 0, 0, 0, 0, m_Width, m_Height, 1);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+Texture::Texture(const std::string &filePath)
+{
+    int width, height, nrChannels;
+    const auto data = stbi_load(filePath.c_str(), &width, &height, &nrChannels, 0);
+    if (data)
     {
-        constexpr auto depth = 32;
-        const auto surface = SDL_CreateRGBSurface(0, m_Width, m_Height, depth, 0, 0, 0, 0);
+        m_Width = width;
+        m_Height = height;
 
-        if (!surface)
-        {
-            SDL_Log("Could not create surface: %s", SDL_GetError());
-            return;
-        }
+        const auto format = (nrChannels == 4) ? GL_RGBA : GL_RGB;
 
-        SDL_FillRect(surface, nullptr, SDL_MapRGBA(surface->format, m_Color.r, m_Color.g, m_Color.b, m_Color.a));
+        m_TextureID = glutils::GenerateOpenGLTexture(m_Width, m_Height, data, format, format, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
-        m_SdlTexture = SDL_CreateTextureFromSurface(m_SdlRenderer, surface);
-        SDL_SetTextureBlendMode(m_SdlTexture, SDL_BLENDMODE_BLEND);
-
-        SDL_FreeSurface(surface);
+        stbi_image_free(data);
     }
     else
     {
-        // Crea la nuova texture
-        m_SdlTexture = SDL_CreateTexture(m_SdlRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, m_Width, m_Height);
-        if (!m_SdlTexture) 
-        {
-            SDL_Log("Failed to create texture: %s", SDL_GetError());
-            return;
-        }
-
-        int pitch = 0;
-
-        // Blocca la texture e ottieni il puntatore ai pixel
-        if (SDL_LockTexture(m_SdlTexture, nullptr, reinterpret_cast<void**>(&m_Pixels), &pitch)) 
-        {
-            SDL_Log("Unable to lock texture: %s", SDL_GetError());
-            SDL_DestroyTexture(m_SdlTexture);
-            return;
-        }
-
-        // Copia i pixel dal buffer dell'immagine alla texture
-        memcpy(m_Pixels, other.m_Pixels, static_cast<size_t>(m_Width) * m_Height * 4);
-
-        if (m_UseBlending)
-        {
-            SDL_SetTextureBlendMode(m_SdlTexture, SDL_BLENDMODE_BLEND);
-        }
-
-        // Sblocca la texture
-        SDL_UnlockTexture(m_SdlTexture);
+        LOG_CRITICAL("Failed to load texture");
     }
-
-    m_Quad = other.m_Quad;
 }
 
-Texture::Texture(SDL_Renderer *sdlRenderer, const std::string &filePath, bool useBlending) : m_SdlRenderer{sdlRenderer}
+Texture::Texture(unsigned width, unsigned height, Color color) : m_Width(width), m_Height(height)
 {
-    int width, height, color_channel;
-    unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &color_channel, STBI_rgb_alpha);
-
-    if (!data)
+    auto data = new unsigned char[width * height * 4];
+    for (unsigned i = 0; i < width * height; ++i)
     {
-        SDL_Log("Failed to load image: %s", stbi_failure_reason());
-        return;
+        data[i * 4 + 0] = color.r;
+        data[i * 4 + 1] = color.g;
+        data[i * 4 + 2] = color.b;
+        data[i * 4 + 3] = color.a;
     }
 
-    m_SdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, width, height);
+    m_TextureID = glutils::GenerateOpenGLTexture(width, height, data, GL_RGBA, GL_RGBA, GL_REPEAT, GL_REPEAT, true);
 
-    if (!m_SdlTexture)
-    {
-        SDL_Log("Failed to create texture: %s", SDL_GetError());
-        stbi_image_free(data);
-        return;
-    }
-
-    int pitch = {};
-
-    if (SDL_LockTexture(m_SdlTexture, nullptr, reinterpret_cast<void**>(&m_Pixels), &pitch))
-    {
-        SDL_Log("Unable to lock texture: %s", SDL_GetError());
-        stbi_image_free(data);
-        SDL_DestroyTexture(m_SdlTexture);
-        return;
-    }
-
-    memset(m_Pixels, 0, static_cast<size_t>(width) * height * 4);
-    memcpy(m_Pixels, data, static_cast<size_t>(width) * height * 4);
-
-    if (useBlending)
-    {
-        SDL_SetTextureBlendMode(m_SdlTexture, SDL_BLENDMODE_BLEND);
-    }
-
-    SDL_UnlockTexture(m_SdlTexture);
-
-    stbi_image_free(data);
-
-    m_UseBlending = useBlending;
-    m_IsLoadedFromFile = true;
-    m_Width = width;
-    m_Height = height;
-    m_Quad.w = width;
-    m_Quad.h = height;
-    m_Color = {};
-}
-
-Texture::Texture(SDL_Renderer* sdlRenderer, const unsigned width, const unsigned height, const Color color) : m_SdlRenderer{sdlRenderer}
-{
-    m_SdlTexture = SDL_CreateTexture(sdlRenderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, static_cast<int>(width), static_cast<int>(height));
-
-    if (!m_SdlTexture)
-    {
-        SDL_Log("Could not create texture: %s", SDL_GetError());
-        return;
-    }
-
-    int pitch = 0;
-    unsigned char* pixels = nullptr;
-
-    if (SDL_LockTexture(m_SdlTexture, nullptr, reinterpret_cast<void**>(&pixels), &pitch))
-    {
-        SDL_Log("Unable to lock texture: %s", SDL_GetError());
-        SDL_DestroyTexture(m_SdlTexture);
-        return;
-    }
-
-    const unsigned char colors[4] = { color.r, color.g, color.b, color.a };
-
-    for (auto y = 0ul; y != height; ++y)
-    {
-        for (auto x = 0ul; x != width; ++x)
-        {
-            memcpy(&pixels[(static_cast<size_t>(y) * width + static_cast<size_t>(x)) * 4], colors, sizeof colors);
-        }
-    }
-
-    SDL_SetTextureBlendMode(m_SdlTexture, SDL_BLENDMODE_BLEND);
-    SDL_UnlockTexture(m_SdlTexture);
-
-    m_Width = width;
-    m_Height = height;
-    m_Quad.w = width;
-    m_Quad.h = height;
-    m_Color = { color.r, color.g, color.b, color.a };
-}
-
-auto Texture::Draw(SDL_Renderer* sdlRenderer, const uint8_t alpha) const -> void
-{
-    if (alpha > 0)
-    {
-        SDL_SetTextureAlphaMod(m_SdlTexture, alpha);
-    }
-
-    SDL_RenderCopyF(sdlRenderer, m_SdlTexture, nullptr, &m_Quad);
-}
-
-auto Texture::SetPositionOnScreen(int x, int y) -> void
-{
-    m_Quad.x = x;
-    m_Quad.y = y;
+    delete[] data;
 }

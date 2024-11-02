@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <algorithm>
 
 namespace rng
 {
@@ -32,7 +33,5 @@ namespace rng
     private:
         static std::mt19937 m_MtGenerator;
     };
-
-    std::mt19937 RNG::m_MtGenerator = std::mt19937(std::random_device{}());
 
 } // namespace rng

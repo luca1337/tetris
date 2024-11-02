@@ -1,6 +1,7 @@
 #pragma once
 
 static constexpr auto BlockSize = 30;
+static constexpr auto HalfBlockSize = BlockSize / 2;
 
 static constexpr auto Columns = 10;
 static constexpr auto Rows = 20;

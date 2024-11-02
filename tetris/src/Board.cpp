@@ -1,5 +1,5 @@
 #include <Board.h>
-#include <Texture.h>
+#include <Sprite.h>
 #include <Tetramino.h>
 #include <Input.h>
 #include <StatsManager.h>
@@ -11,37 +11,35 @@
 
 #include <Random.h>
 
+#include <rendering/Shader.h>
+#include <ResourceManager.h>
+#include <rendering/ParticleSystem.h>
+
 constexpr int X_UNIT_PADDING = 9;
 constexpr int Y_UNIT_PADDING = 15;
 
 Board::Board(const Window &window) : m_Window{window}
 {
-    const auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
+    const auto particleShader = std::make_shared<Shader>("../../tetris/resources/shaders/vertex_particle.glsl", "../../tetris/resources/shaders/fragment_particle.glsl");
+    const auto fontShader = std::make_shared<Shader>("../../tetris/resources/shaders/vertex_font.glsl", "../../tetris/resources/shaders/fragment_font.glsl");
+    const auto spriteShader = std::make_shared<Shader>("../../tetris/resources/shaders/vertex_sprite.glsl", "../../tetris/resources/shaders/fragment_sprite.glsl");
 
-    m_TextureMap = std::unordered_map<uint8_t, std::shared_ptr<Texture>>
-    {
-        // {BackgroundIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/bg.png", true)},
-        {BoundIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/gray.png", true)},
-        {TetraminoIIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/cyan.png", true)},
-        {TetraminoJIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/blue.png", true)},
-        {TetraminoLIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/orange.png", true)},
-        {TetraminoOIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/yellow.png", true)},
-        {TetraminoSIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/green.png", true)},
-        {TetraminoTIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/magenta.png", true)},
-        {TetraminoZIndex, std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/red.png", true)},
-    };
+    ResourceManager::RegisterResource(ResourceParams{ResourceType::Shader, "ParticleShader", particleShader});
+    ResourceManager::RegisterResource(ResourceParams{ResourceType::Shader, "FontShader", fontShader});
+    ResourceManager::RegisterResource(ResourceParams{ResourceType::Shader, "SpriteShader", spriteShader});
 
-    m_StatsBgTexture = std::make_shared<Texture>(sdlRenderer, "../../tetris/resources/textures/tetris_stats_bg.png", true);
+    m_StatsBgTexture = std::make_shared<Sprite>("../../tetris/resources/textures/tetris_stats_bg.png");
     if (!m_StatsBgTexture)
     {
         SDL_Log("Couldn't create Stats Background Texture..");
         return;
     }
 
-    auto [texWidth, texHeight] = m_StatsBgTexture->GetSizeInPixel();
-    auto [texPosX, texPosY] = m_StatsBgTexture->GetPositionOnScreen();
+    // todo: fix background stuff
+    const auto bgSize = m_StatsBgTexture->GetSize();
+    const auto bgPos = m_StatsBgTexture->GetPositionOnScreen();
 
-    m_StatsBgTexture->SetPositionOnScreen((texPosX + window.Props().width - texWidth) - 1, texPosY);
+    m_StatsBgTexture->SetLocalTranslation((bgPos.x + window.Props().width - bgSize.x), bgPos.y);
 
     for (auto rowIdx = 0ul; rowIdx != Rows; ++rowIdx)
     {
@@ -49,6 +47,9 @@ Board::Board(const Window &window) : m_Window{window}
         {
             if (columnIdx == 0 || columnIdx == (Columns - 1))
             {
+                auto wallBlock = std::make_shared<Sprite>("../../tetris/resources/textures/gray.png");
+                wallBlock->SetLocalTranslation(columnIdx * BlockSize, rowIdx * BlockSize);
+                m_WallBlocks.push_back(wallBlock);
                 m_Matrix.push_back(BoundIndex);
             }
             else
@@ -65,26 +66,37 @@ Board::Board(const Window &window) : m_Window{window}
     m_NextTetramino = std::make_shared<Tetramino>(*m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))]);
     for (auto& block: m_NextTetramino->Blocks())
     {
-        auto [sx, sy] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(sx + BlockSize * X_UNIT_PADDING, sy + BlockSize * Y_UNIT_PADDING);
+        const auto positionOnScreen = block->GetPositionOnScreen();
+        block->SetLocalTranslation(positionOnScreen.x + BlockSize * X_UNIT_PADDING, positionOnScreen.y + BlockSize * Y_UNIT_PADDING);
     }
+
     
     RandomizeCurrentPlayingTetramino();
 
     m_OriginalMatrix = m_Matrix;
 
     m_GhostTetramino = std::make_shared<Tetramino>(*m_CurrentTetramino);
+    m_GhostTetramino->SetAlpha(0.5f);
 
     m_StatsManager = std::make_shared<StatsManager>(window);
+
+    m_DestroyBlockPSs = std::vector<std::shared_ptr<ParticleSystem>>{};
 }
 
 auto Board::Draw() -> void
 {
-    const auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
+    // todo: this must be optimized, maybe cached outside of this loop
+    const auto spriteShader = ResourceManager::GetFromCache<Shader>({ResourceType::Shader, "SpriteShader"});
+    const auto particleShader = ResourceManager::GetFromCache<Shader>({ResourceType::Shader, "ParticleShader"});
 
 #pragma region UI
+    for (auto&& ps: m_DestroyBlockPSs)
+    {
+        ps->Update(m_Window.m_DeltaTime);
+        ps->Render(particleShader.value());
+    }
 
-    m_StatsBgTexture->Draw(sdlRenderer, 0xff*1/2); 
+    m_StatsBgTexture->Render(spriteShader.value());
 
     m_StatsManager->Draw();
 
@@ -94,7 +106,9 @@ auto Board::Draw() -> void
 
     m_CurrentTetramino->Draw();
     m_NextTetramino->Draw();
-    m_GhostTetramino->Draw(0xFF*1/3);
+
+    m_GhostTetramino->SetAlpha(0.3f);
+    m_GhostTetramino->Draw();
 
 #pragma endregion
 
@@ -102,6 +116,7 @@ auto Board::Draw() -> void
     {
         for (auto columnIdx = 0ul; columnIdx != Columns; ++columnIdx)
         {
+            // Skip blocks that are blinking
             if (m_IsBlinking)
             {
                 const auto foundIdx = std::find(m_RowsToClear.begin(), m_RowsToClear.end(), rowIdx);
@@ -112,15 +127,21 @@ auto Board::Draw() -> void
             }
 
             const auto index = rowIdx * Columns + columnIdx;
-
-            if (m_TextureMap.contains(m_Matrix[index]))
+            if (m_SpriteMap.contains(index))
             {
-                auto& block = m_TextureMap[m_Matrix[index]];
-                block->SetPositionOnScreen(columnIdx * BlockSize, rowIdx * BlockSize);
-                block->Draw(sdlRenderer, 0xFF);
+                auto& block = m_SpriteMap[index];
+                block->SetLocalTranslation(columnIdx * BlockSize, rowIdx * BlockSize);
+                block->Render(spriteShader.value());
+            }
+
+            // Draw Walls
+            for (const auto& wall: m_WallBlocks)
+            {
+                wall->Render(spriteShader.value());
             }
         }
     }
+
 }
 
 auto Board::RandomizeCurrentPlayingTetramino() -> void
@@ -133,7 +154,7 @@ auto Board::RandomizeCurrentPlayingTetramino() -> void
     m_NextTetramino = std::make_shared<Tetramino>(*m_Tetraminos[rng::RNG::GenerateRandomNumber(0, static_cast<int>(m_Tetraminos.size() - 1))]);
     for (auto& block: m_NextTetramino->Blocks())
     {
-        auto [sx, sy] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(sx + BlockSize * X_UNIT_PADDING, sy + BlockSize * Y_UNIT_PADDING);
+        const auto positionOnScreen = block->GetPositionOnScreen();
+        block->SetLocalTranslation(positionOnScreen.x + BlockSize * X_UNIT_PADDING, positionOnScreen.y + BlockSize * Y_UNIT_PADDING);
     }
 }

@@ -65,10 +65,11 @@ public:
     Tetramino(const Window&, const TetraminoType&);
 
     auto SetSize(const glm::vec2& size) -> void;
+    auto SetAlpha(const float alpha) -> void;
     auto Translate(const DirectionType&) -> void;
     auto Rotate(const std::vector<uint8_t>& matrixBoard, const DirectionType&) -> void;
     auto Reset() -> void;
-    auto Draw(uint8_t alpha = 0xFF) -> void;
+    auto Draw() -> void;
 
     [[nodiscard]] const auto& Matrix() const { return m_TetraminoMatrix; }
     [[nodiscard]] auto& Matrix() { return m_TetraminoMatrix; }
@@ -81,7 +82,7 @@ public:
     [[nodiscard]] auto GetType() const { return m_Type; };
     [[nodiscard]] auto GetMatrixRowLength() const { return static_cast<int>(std::sqrt(m_TetraminoMatrix.size())); };
     [[nodiscard]] auto GetBlockPositionInMatrix() -> std::vector<uint8_t>;
-    [[nodiscard]] auto GetBlockPositionInPixels() -> std::vector<std::tuple<int, int>>;
+    [[nodiscard]] auto GetBlockPositionInPixels() -> std::vector<glm::vec2>;
     [[nodiscard]] auto CanMove(const std::vector<uint8_t>& matrixBoard, const DirectionType direction) -> bool;
 
     int deltaX = {};
@@ -91,7 +92,7 @@ public:
 
 private:
     std::vector<uint8_t> m_TetraminoMatrix, m_OriginalTetraminoMatrix = {};
-    std::vector<std::shared_ptr<class Texture>> m_Blocks = {};
+    std::vector<std::shared_ptr<class Sprite>> m_Blocks = {};
 
     TetraminoType m_Type = {};
     std::string m_Path = {};

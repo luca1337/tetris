@@ -1,8 +1,9 @@
 #include <Tetramino.h>
-#include <Texture.h>
+#include <Sprite.h>
 #include <Utils.h>
+#include <ResourceManager.h>
+#include <rendering/Shader.h>
 
-#include <SDL2/SDL.h>
 #include <glm/vec2.hpp>
 
 auto IterateMatrix(size_t length, const std::function<void(int, int)>& func)
@@ -26,13 +27,13 @@ auto UpdateBlockPosition(const Tetramino& tetramino, int i, int j, int& blockInd
         const auto yPadding = (tetramino.GetType() == TetraminoType::O || tetramino.GetType() == TetraminoType::Z || tetramino.GetType() == TetraminoType::S) ? 1 : 0;
 
         const auto& block = tetramino.Blocks()[blockIndex++];
-        block->SetPositionOnScreen(tetramino.deltaX + i * BlockSize + (xPadding * BlockSize), tetramino.deltaY + j * BlockSize + (yPadding * BlockSize));
+        block->SetLocalTranslation(tetramino.deltaX + i * BlockSize + (xPadding * BlockSize), tetramino.deltaY + j * BlockSize + (yPadding * BlockSize));
     }
 }
 
-auto BuildTetraminoFromMatrix(SDL_Renderer* sdlRenderer, Tetramino& tetramino, const uint8_t* matrix)
+auto BuildTetraminoFromMatrix(Tetramino& tetramino, const uint8_t* matrix)
 {
-    auto blocks = std::vector<std::shared_ptr<Texture>>{};
+    auto blocks = std::vector<std::shared_ptr<Sprite>>{};
 
     std::copy(matrix, matrix + tetramino.Matrix().size(), tetramino.Matrix().begin());
 
@@ -46,9 +47,9 @@ auto BuildTetraminoFromMatrix(SDL_Renderer* sdlRenderer, Tetramino& tetramino, c
                 const auto xPadding = tetramino.GetType() == TetraminoType::O ? 4 : 3;
                 const auto yPadding = (tetramino.GetType() == TetraminoType::O || tetramino.GetType() == TetraminoType::Z || tetramino.GetType() == TetraminoType::S) ? 1 : 0;
 
-                auto blockTexture = std::make_shared<Texture>(sdlRenderer, tetramino.GetTexturePath(), true);
-                blockTexture->SetPositionOnScreen(i * BlockSize + (xPadding * BlockSize), j * BlockSize + (yPadding * BlockSize));
-                blocks.push_back(blockTexture);
+                auto blockSprite = std::make_shared<Sprite>(tetramino.GetTexturePath());
+                blockSprite->SetLocalTranslation(i * BlockSize + (xPadding * BlockSize), j * BlockSize + (yPadding * BlockSize));
+                blocks.push_back(blockSprite);
             }
     });
 
@@ -68,8 +69,6 @@ auto RefreshTetramino(const Tetramino& tetramino)
 
 Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window{window}, m_Type{type}
 {
-    auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
-
     switch (type)
     {
     case TetraminoType::I:
@@ -77,7 +76,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoIIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoIMap.size());
         m_OriginalTetraminoMatrix = TetraminoIMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoIMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoIMap.data());
         break;
     
     case TetraminoType::J:
@@ -85,7 +84,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoJIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoJMap.size());
         m_OriginalTetraminoMatrix = TetraminoJMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoJMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoJMap.data());
         break;
 
     case TetraminoType::L:
@@ -93,7 +92,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoLIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoLMap.size());
         m_OriginalTetraminoMatrix = TetraminoLMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoLMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoLMap.data());
         break;
 
     case TetraminoType::O:
@@ -101,7 +100,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoOIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoOMap.size());
         m_OriginalTetraminoMatrix = TetraminoOMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoOMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoOMap.data());
         break;
 
     case TetraminoType::S:
@@ -109,7 +108,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoSIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoSMap.size());
         m_OriginalTetraminoMatrix = TetraminoSMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoSMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoSMap.data());
         break;
 
     case TetraminoType::T:
@@ -117,7 +116,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoTIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoTMap.size());
         m_OriginalTetraminoMatrix = TetraminoTMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoTMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoTMap.data());
         break;
 
     case TetraminoType::Z:
@@ -125,7 +124,7 @@ Tetramino::Tetramino(const Window &window, const TetraminoType &type) : m_Window
         m_Index = TetraminoZIndex;
         m_TetraminoMatrix = std::vector<uint8_t>(TetraminoZMap.size());
         m_OriginalTetraminoMatrix = TetraminoZMap;
-        m_Blocks = BuildTetraminoFromMatrix(sdlRenderer, *this, TetraminoZMap.data());
+        m_Blocks = BuildTetraminoFromMatrix(*this, TetraminoZMap.data());
         break;
 
     default:
@@ -145,7 +144,7 @@ Tetramino::Tetramino(const Tetramino& rhs) : m_Window{rhs.m_Window}
 
     for (const auto& block : rhs.m_Blocks) 
     {
-        m_Blocks.push_back(std::make_shared<Texture>(*block));
+        m_Blocks.push_back(std::make_shared<Sprite>(*block));
     }
 }
 
@@ -153,7 +152,15 @@ auto Tetramino::SetSize(const glm::vec2 &size) -> void
 {
     for(auto&& block: m_Blocks)
     {
-        block->SetSize(size);
+        block->SetLocalScale(size);
+    }
+}
+
+auto Tetramino::SetAlpha(const float alpha) -> void
+{
+    for(auto&& block: m_Blocks)
+    {
+        block->SetAlpha(alpha);
     }
 }
 
@@ -182,8 +189,8 @@ auto Tetramino::Translate(const DirectionType &direction) -> void
 
     for (auto& block : m_Blocks)
     {
-        auto [screenX, screenY] = block->GetPositionOnScreen();
-        block->SetPositionOnScreen(screenX + deltaXChange, screenY + deltaYChange);
+        const auto positionOnScreen = block->GetPositionOnScreen();
+        block->SetLocalTranslation(positionOnScreen.x + deltaXChange, positionOnScreen.y + deltaYChange);
     }
 }
 
@@ -254,16 +261,16 @@ auto Tetramino::Reset() -> void
     deltaY = 0;
 }
 
-auto Tetramino::Draw(uint8_t alpha) -> void
+auto Tetramino::Draw() -> void
 {
+    const auto spriteShader = ResourceManager::GetFromCache<Shader>({ResourceType::Shader, "SpriteShader"});
+    
     if (!isVisible)
         return;
 
-    auto sdlRenderer = static_cast<SDL_Renderer*>(m_Window.GetRendererHandle());
-
     for(const auto& block: m_Blocks)
     {
-        block->Draw(sdlRenderer, alpha);
+        block->Render(spriteShader.value());
     }
 }
 
@@ -304,10 +311,10 @@ auto Tetramino::GetBlockPositionInMatrix() -> std::vector<uint8_t>
 
     for(auto&& block: m_Blocks)
     {
-        const auto [x, y] = block->GetPositionOnScreen();
+        const auto positionOnScreen = block->GetPositionOnScreen();
         
-        const auto matrixX = x / BlockSize;
-        const auto matrixY = y / BlockSize;
+        const auto matrixX = positionOnScreen.x / BlockSize;
+        const auto matrixY = positionOnScreen.y / BlockSize;
 
         const auto matrixIndex = matrixY * Columns + matrixX;
 
@@ -317,9 +324,9 @@ auto Tetramino::GetBlockPositionInMatrix() -> std::vector<uint8_t>
     return matrixPositionsIndexes;
 }
 
-auto Tetramino::GetBlockPositionInPixels() -> std::vector<std::tuple<int, int>>
+auto Tetramino::GetBlockPositionInPixels() -> std::vector<glm::vec2>
 {
-    auto positions = std::vector<std::tuple<int, int>>{};
+    auto positions = std::vector<glm::vec2>{};
 
     for(auto&& block: m_Blocks)
     {
