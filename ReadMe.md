@@ -28,4 +28,7 @@ Make sure to have these tools installed for a complete development and debugging
 
 Take a look at the project in action! 🚀
 
-![Demo Screenshot](https://github.com/user-attachments/assets/0ca6c4c3-5e7f-432e-be16-ca6f4839c609)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0ca6c4c3-5e7f-432e-be16-ca6f4839c609" alt="Screenshot 1" width="45%" />
+  <img src="https://github.com/user-attachments/assets/1b7f4e3a-2c5b-4f1c-8a2d-b789a4b8d3e7" alt="Screenshot 2" width="45%" />
+</p>
