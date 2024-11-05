@@ -2,7 +2,6 @@
     "cmake.configureArgs": [
         "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/extlib/vcpkg/scripts/buildsystems/vcpkg.cmake",
         "-DCMAKE_MAKE_PROGRAM=C:/msys64/mingw64/bin/ninja.exe",
-        "-DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic"
     ],
     "cmake.generator": "Ninja",
     "files.associations": {

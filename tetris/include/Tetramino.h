@@ -9,6 +9,7 @@
 #include <Color.h>
 #include <Window.h>
 
+#include <string>
 #include <glm/vec2.hpp>
 
 #pragma region SHAPES

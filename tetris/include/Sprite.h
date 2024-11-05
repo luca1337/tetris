@@ -7,6 +7,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+#include <string>
 #include <memory>
 
 class Shader;
