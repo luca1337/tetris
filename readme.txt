@@ -16,3 +16,5 @@ requirements:
         - Cmake and Make ()
 
 Note: windows users can use MSYS2 to install all the packets easly!
+
+![image](https://github.com/user-attachments/assets/0ca6c4c3-5e7f-432e-be16-ca6f4839c609)
